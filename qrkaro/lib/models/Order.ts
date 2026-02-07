@@ -1,0 +1,83 @@
+import mongoose, { Schema, models, Model } from 'mongoose';
+
+export interface IOrderItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+export interface IOrder {
+  orderId: string;
+  vendorId: string;
+  items: IOrderItem[];
+  subtotal: number;
+  tax: number;
+  platformFee: number;
+  totalAmount: number;
+  customerPhone?: string;
+  customerName?: string;
+  status: 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  paymentStatus: 'pending' | 'paid' | 'failed';
+  paymentId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const OrderSchema = new Schema<IOrder>(
+  {
+    orderId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    vendorId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    items: [
+      {
+        name: String,
+        price: Number,
+        quantity: Number,
+      },
+    ],
+    subtotal: {
+      type: Number,
+      required: true,
+    },
+    tax: {
+      type: Number,
+      default: 0,
+    },
+    platformFee: {
+      type: Number,
+      default: 5,
+    },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    customerPhone: String,
+    customerName: String,
+    status: {
+      type: String,
+      enum: ['pending', 'preparing', 'ready', 'completed', 'cancelled'],
+      default: 'pending',
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'paid', 'failed'],
+      default: 'pending',
+    },
+    paymentId: String,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const Order: Model<IOrder> = models.Order || mongoose.model<IOrder>('Order', OrderSchema);
+
+export default Order;
