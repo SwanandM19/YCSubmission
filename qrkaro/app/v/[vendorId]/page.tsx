@@ -82,7 +82,7 @@ export default function CustomerMenuPage() {
               <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">Q</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">QRKaro</span>
+              <span className="text-xl font-bold text-gray-900">NOSHER</span>
             </div>
             <div className="flex items-center gap-4">
               <button className="text-gray-600 hover:text-gray-900 text-sm">Menu</button>
@@ -145,11 +145,7 @@ export default function CustomerMenuPage() {
             return (
               <div key={index} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4">
                 {/* Placeholder for item image */}
-                <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 relative">
-                  <div className="absolute top-1 left-1 w-5 h-5 bg-green-500 rounded flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                  </div>
-                </div>
+
 
                 {/* Item Details */}
                 <div className="flex-1">
@@ -189,7 +185,7 @@ export default function CustomerMenuPage() {
         </div>
 
         <div className="text-center mt-8 text-sm text-gray-400">
-          POWERED BY QRKARO
+          POWERED BY NOSHER
         </div>
       </div>
 

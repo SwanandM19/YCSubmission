@@ -32,7 +32,7 @@ export default function SettingsPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Platform Settings</h1>
-        <p className="text-gray-600 mt-1">Configure your QRKaro platform</p>
+        <p className="text-gray-600 mt-1">Configure your NOSHER platform</p>
       </div>
 
       <div className="space-y-6">

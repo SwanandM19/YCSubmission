@@ -1,202 +1,130 @@
-// import { NextRequest, NextResponse } from 'next/server';
-// import connectDB from '@/lib/mongodb';
-// import Vendor from '@/lib/models/Vendor';
-// import QRCode from 'qrcode';
-// import { nanoid } from 'nanoid';
-
-// export async function POST(req: NextRequest) {
-//   try {
-//     await connectDB();
-
-//     const body = await req.json();
-
-//     const {
-//       shopName,
-//       phone,
-//       city,
-//       shopType,
-//       menuItems,
-//       accountHolderName,
-//       accountNumber,
-//       ifscCode,
-//       panNumber,
-//     } = body;
-
-//     // Validate required fields
-//     if (!shopName || !phone || !city || !shopType || !menuItems || menuItems.length === 0) {
-//       return NextResponse.json(
-//         { error: 'Missing required fields' },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Generate unique vendor ID
-//     const vendorId = nanoid(10);
-
-//     // Generate customer page URL
-//     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-//     const customerPageUrl = `${baseUrl}/v/${vendorId}`;
-
-//     // Generate QR Code
-//     let qrCodeUrl = '';
-//     try {
-//       qrCodeUrl = await QRCode.toDataURL(customerPageUrl, {
-//         width: 400,
-//         margin: 2,
-//         color: {
-//           dark: '#000000',
-//           light: '#FFFFFF',
-//         },
-//       });
-//     } catch (qrError) {
-//       console.error('QR Code generation error:', qrError);
-//       // Continue without QR code - can be generated later
-//     }
-
-//     // Create vendor in database
-//     const vendor = await Vendor.create({
-//       vendorId,
-//       shopName,
-//       phone,
-//       city,
-//       shopType,
-//       menuItems,
-//       accountHolderName,
-//       accountNumber,
-//       ifscCode,
-//       panNumber,
-//       qrCodeUrl,
-//       customerPageUrl,
-//       status: 'active',
-//     });
-
-//     return NextResponse.json({
-//       success: true,
-//       vendorId: vendor.vendorId,
-//       customerPageUrl: vendor.customerPageUrl,
-//       qrCodeUrl: vendor.qrCodeUrl,
-//     });
-//   } catch (error: any) {
-//     console.error('Vendor creation error:', error);
-//     return NextResponse.json(
-//       { error: error.message || 'Internal server error' },
-//       { status: 500 }
-//     );
-//   }
-// }
-// // Add this function to the existing file
-
-// export async function GET(req: NextRequest) {
-//   try {
-//     await connectDB();
-
-//     const { searchParams } = new URL(req.url);
-//     const vendorId = searchParams.get('vendorId');
-
-//     if (!vendorId) {
-//       return NextResponse.json({ error: 'Vendor ID required' }, { status: 400 });
-//     }
-
-//     const vendor = await Vendor.findOne({ vendorId });
-
-//     if (!vendor) {
-//       return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
-//     }
-
-//     return NextResponse.json({
-//       vendorId: vendor.vendorId,
-//       shopName: vendor.shopName,
-//       shopType: vendor.shopType,
-//       customerPageUrl: vendor.customerPageUrl,
-//       qrCodeUrl: vendor.qrCodeUrl,
-//       menuItems: vendor.menuItems,
-//     });
-//   } catch (error: any) {
-//     console.error('Vendor fetch error:', error);
-//     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-//   }
-// }
-
-
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import connectDB from '@/lib/db';
 import Vendor from '@/lib/models/Vendor';
-import { customAlphabet } from 'nanoid';
+import QRCode from 'qrcode';
 
-const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 10);
+// Generate unique vendor ID
+function generateVendorId() {
+  return `VND${Date.now()}${Math.floor(Math.random() * 1000)}`;
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    
-    // Log what we received
-    console.log('📥 Received data:', body);
+    await connectDB();
 
-    const { 
-      shopName, 
-      phone, 
-      city, 
-      state,        // ADD THIS
-      shopType, 
+    const body = await req.json();
+
+    console.log('📥 Received vendor data:', JSON.stringify(body, null, 2));
+
+    const {
+      shopName,
+      phone,
+      city,
+      state,
+      shopType,
       menuItems,
-      upiId,        // ADD THIS
-      accountHolderName,  // ADD THIS
-      bankAccount,  // ADD THIS (optional)
-      ifscCode      // ADD THIS (optional)
+      upiId,
+      accountHolderName,
+      bankAccount,
+      ifscCode,
+      subscriptionPaymentId,
+      subscriptionOrderId,
+      subscriptionPaid,
     } = body;
 
     // Validate required fields
-    if (!shopName || !phone || !city || !state || !shopType) {
+    if (!shopName || !phone || !city || !state || !shopType || !upiId || !accountHolderName) {
+      console.error('❌ Missing required fields:', {
+        shopName: !!shopName,
+        phone: !!phone,
+        city: !!city,
+        state: !!state,
+        shopType: !!shopType,
+        upiId: !!upiId,
+        accountHolderName: !!accountHolderName,
+      });
       return NextResponse.json(
-        { error: 'Missing required shop details' },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    if (!menuItems || menuItems.length === 0) {
+    // Validate menuItems
+    if (!menuItems || !Array.isArray(menuItems) || menuItems.length === 0) {
+      console.error('❌ Invalid or empty menu items');
       return NextResponse.json(
-        { error: 'At least one menu item is required' },
+        { error: 'Menu items are required' },
         { status: 400 }
       );
     }
 
-    if (!upiId || !accountHolderName) {
+    // Check if phone already exists
+    const existingVendor = await Vendor.findOne({ phone });
+    if (existingVendor) {
+      console.error('❌ Phone number already exists:', phone);
       return NextResponse.json(
-        { error: 'UPI ID and Account Holder Name are required' },
+        { error: 'Phone number already registered' },
         { status: 400 }
       );
     }
 
-    // Generate unique vendor ID
-    const vendorId = nanoid();
+    // Generate vendor ID
+    const vendorId = generateVendorId();
 
-    // Connect to database
-    await connectDB();
+    // Generate QR code for customer ordering page
+    const customerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/order/${vendorId}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(customerUrl, {
+      width: 500,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF',
+      },
+    });
 
-    // Create vendor in database
-    const vendor = await Vendor.create({
+    // Create vendor with exact schema match
+    const vendorData = {
       vendorId,
       shopName,
       phone,
       city,
-      state,              // ADD THIS
+      state,
       shopType,
       menuItems,
-      upiId,              // ADD THIS
-      accountHolderName,  // ADD THIS
-      bankAccount,        // ADD THIS (optional)
-      ifscCode,           // ADD THIS (optional)
-    });
+      upiId,
+      accountHolderName,
+      bankAccount: bankAccount || '',
+      ifscCode: ifscCode || '',
+      qrCode: qrCodeDataUrl,
+      subscriptionPaid: subscriptionPaid === true,
+      subscriptionPaymentId: subscriptionPaymentId || '',
+      subscriptionOrderId: subscriptionOrderId || '',
+      subscriptionAmount: 200,
+      subscriptionDate: subscriptionPaid === true ? new Date() : undefined,
+      isActive: true,
+    };
 
-    console.log('✅ Vendor created:', vendorId);
+    console.log('📤 Creating vendor with data:', JSON.stringify(vendorData, null, 2));
+
+    const vendor = await Vendor.create(vendorData);
+
+    console.log('✅ Vendor created successfully:', vendorId);
 
     return NextResponse.json({
       success: true,
       vendorId: vendor.vendorId,
-      message: 'Vendor created successfully',
-    });
+      shopName: vendor.shopName,
+      qrCode: vendor.qrCode,
+      customerUrl,
+      dashboardUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/vendor/${vendorId}`,
+    }, { status: 201 });
+
   } catch (error: any) {
-    console.error('❌ Vendor creation error:', error);
+    console.error('❌ Error creating vendor:', error);
+    console.error('Error details:', error.message);
+    if (error.errors) {
+      console.error('Validation errors:', JSON.stringify(error.errors, null, 2));
+    }
     return NextResponse.json(
       { error: error.message || 'Failed to create vendor' },
       { status: 500 }
@@ -206,23 +134,40 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
+    await connectDB();
+
     const { searchParams } = new URL(req.url);
     const vendorId = searchParams.get('vendorId');
+    const phone = searchParams.get('phone');
 
-    if (!vendorId) {
-      return NextResponse.json({ error: 'Vendor ID is required' }, { status: 400 });
+    if (vendorId) {
+      const vendor = await Vendor.findOne({ vendorId });
+      if (!vendor) {
+        return NextResponse.json(
+          { error: 'Vendor not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(vendor);
     }
 
-    await connectDB();
-    const vendor = await Vendor.findOne({ vendorId });
-
-    if (!vendor) {
-      return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+    if (phone) {
+      const vendor = await Vendor.findOne({ phone });
+      if (!vendor) {
+        return NextResponse.json(
+          { error: 'Vendor not found' },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(vendor);
     }
 
-    return NextResponse.json(vendor);
+    // Get all vendors (admin use)
+    const vendors = await Vendor.find().sort({ createdAt: -1 }).limit(50);
+    return NextResponse.json(vendors);
+
   } catch (error: any) {
-    console.error('Error fetching vendor:', error);
+    console.error('❌ Error fetching vendor:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to fetch vendor' },
       { status: 500 }
