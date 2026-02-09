@@ -179,7 +179,7 @@ export default function MenuInput() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('http://localhost:5000/extract-menu', {
+      const response = await fetch('https://ooommmggg-menu-extractor-api.hf.space/extract-menu', {
         method: 'POST',
         body: formData,
       });
@@ -220,7 +220,7 @@ export default function MenuInput() {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('http://localhost:5000/extract-menu', {
+      const response = await fetch('https://ooommmggg-menu-extractor-api.hf.space/extract-menu', {
         method: 'POST',
         body: formData,
       });

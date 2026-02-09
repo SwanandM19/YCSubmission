@@ -470,7 +470,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-400 font-medium">© 2026 QRKaro. All rights reserved.</p>
+            <p className="text-sm text-gray-400 font-medium">© 2026 Nosher. All rights reserved.</p>
             <div className="flex items-center gap-2 text-sm font-bold text-gray-500">
               <span>Made in India</span>
               <span className="flex items-center gap-1">
