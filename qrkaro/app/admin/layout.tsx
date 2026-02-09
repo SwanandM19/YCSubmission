@@ -30,7 +30,7 @@ export default function AdminLayout({
                 <span className="text-white font-bold text-xl">Q</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">QRKaro Admin</h1>
+                <h1 className="text-xl font-bold text-gray-900">Nosher Admin</h1>
                 <p className="text-xs text-gray-500">Super Admin Portal</p>
               </div>
             </div>
@@ -46,7 +46,7 @@ export default function AdminLayout({
                   <span className="text-white font-bold">A</span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Admin QRKaro</p>
+                  <p className="text-sm font-semibold text-gray-900">Admin Nosher</p>
                   <p className="text-xs text-gray-500">Super Admin</p>
                 </div>
               </div>

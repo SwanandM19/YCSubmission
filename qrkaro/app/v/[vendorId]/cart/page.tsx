@@ -308,7 +308,7 @@ export default function CartPage() {
         key: razorpayData.keyId,
         amount: razorpayData.amount,
         currency: razorpayData.currency,
-        name: 'QRKaro',
+        name: 'Nosher',
         description: `Order #${orderData.orderId}`,
         order_id: razorpayData.razorpayOrderId,
         handler: async function (response: any) {
@@ -413,7 +413,7 @@ export default function CartPage() {
                 <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">Q</span>
                 </div>
-                <span className="text-xl font-bold text-gray-900">QRKaro</span>
+                <span className="text-xl font-bold text-gray-900">Nosher</span>
               </div>
             </div>
           </div>

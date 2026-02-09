@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'QRKaro - Digital Ordering for Local Businesses',
+  title: 'Nosher - Digital Ordering for Local Businesses',
   description: 'Set up digital ordering and payments in minutes',
 }
 

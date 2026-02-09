@@ -164,7 +164,7 @@ export default function LandingPage() {
                 <QrCode className="text-white w-6 h-6" />
               </div>
               <span className="text-2xl font-extrabold tracking-tight text-gray-900">
-                QR<span className="text-orange-500">Karo</span>
+                <span className="text-orange-500">No</span>sher
               </span>
             </Link>
 
@@ -316,7 +316,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-[48px] p-8 md:p-20 shadow-xl shadow-orange-100 border border-orange-100 grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-black mb-10">Why Choose QRKaro?</h2>
+              <h2 className="text-4xl font-black mb-10">Why Choose Nosher?</h2>
               <ul className="space-y-8">
                 {features.map((feature, idx) => (
                   <li key={idx} className="flex gap-5">
@@ -433,7 +433,7 @@ export default function LandingPage() {
                 <div className="bg-orange-500 p-1 rounded-md">
                   <QrCode className="text-white w-4 h-4" />
                 </div>
-                <span className="text-xl font-black tracking-tight">QRKaro</span>
+                <span className="text-xl font-black tracking-tight">Nosher</span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed mb-6">
                 Digitalising India's small businesses, one scan at a time. Empowering vendors with zero-commission tools.
@@ -470,7 +470,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-400 font-medium">© 2026 QRKaro. All rights reserved.</p>
+            <p className="text-sm text-gray-400 font-medium">© 2026 Nosher. All rights reserved.</p>
             <div className="flex items-center gap-2 text-sm font-bold text-gray-500">
               <span>Made in India</span>
               <span className="flex items-center gap-1">

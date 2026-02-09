@@ -209,7 +209,7 @@ export default function OrderSuccessPage() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
-    doc.text('QRKaro', 105, 20, { align: 'center' });
+    doc.text('Nosher', 105, 20, { align: 'center' });
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
@@ -344,15 +344,15 @@ export default function OrderSuccessPage() {
     doc.text('Thank you for your order!', 105, yPos, { align: 'center' });
     
     yPos += 6;
-    doc.text('Questions? Contact us at support@qrkaro.com', 105, yPos, { align: 'center' });
+    doc.text('Questions? Contact us at support@Nosher.com', 105, yPos, { align: 'center' });
 
     // Watermark
     doc.setTextColor(220, 220, 220);
     doc.setFontSize(8);
-    doc.text('Powered by QRKaro - Seamless Dining Experience', 105, 285, { align: 'center' });
+    doc.text('Powered by Nosher - Seamless Dining Experience', 105, 285, { align: 'center' });
 
     // Save PDF
-    doc.save(`QRKaro-Receipt-${order.orderId}.pdf`);
+    doc.save(`Nosher-Receipt-${order.orderId}.pdf`);
   };
 
   return (
