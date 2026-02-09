@@ -433,7 +433,7 @@ export default function CartPage() {
               <div className="space-y-4">
                 {items.map((item, index) => (
                   <div key={index} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4">
-                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                    {/* <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0"></div> */}
 
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{item.name}</h3>
