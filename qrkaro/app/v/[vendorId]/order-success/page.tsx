@@ -155,6 +155,8 @@ import { useSearchParams, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
+import { requestNotificationPermission } from "@/lib/firebase";
+
 
 export default function OrderSuccessPage() {
   const searchParams = useSearchParams();

@@ -24,3 +24,43 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ================= GOOGLE TRANSLATE FIX ================= */
+
+/* Hide top blue banner */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+
+/* Remove body shift */
+body {
+  top: 0px !important;
+}
+
+/* Hide Google tooltip */
+.goog-tooltip {
+  display: none !important;
+}
+
+/* Remove highlight background */
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide Google logo & text */
+.goog-logo-link,
+.goog-te-gadget span {
+  display: none !important;
+}
+
+/* Extra force hide */
+iframe.goog-te-banner-frame {
+  display: none !important;
+}

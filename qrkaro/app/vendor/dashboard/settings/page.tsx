@@ -38,7 +38,6 @@ export default function VendorSettingsPage() {
 
   const downloadQR = () => {
     const qrUrl = `${window.location.origin}/v/${vendorId}`;
-    // In production, you'd generate actual QR here
     alert(`QR Code URL: ${qrUrl}\n\nIntegrate QR generation library to download image.`);
   };
 
@@ -78,7 +77,10 @@ export default function VendorSettingsPage() {
         <div className="mb-6">
           <h3 className="text-sm font-bold text-gray-900 mb-3 px-2">Shop Management</h3>
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
+            <button 
+              onClick={() => router.push('/vendor/dashboard/settings/edit-shop')}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
@@ -92,7 +94,10 @@ export default function VendorSettingsPage() {
               </svg>
             </button>
 
-            <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b">
+            <button 
+              onClick={() => router.push('/vendor/dashboard/menu')}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition border-b"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +198,10 @@ export default function VendorSettingsPage() {
               <span className="text-xs font-medium">Orders</span>
             </button>
             
-            <button className="flex flex-col items-center gap-1 text-gray-500">
+            <button 
+              onClick={() => router.push('/vendor/dashboard/menu')}
+              className="flex flex-col items-center gap-1 text-gray-500"
+            >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>

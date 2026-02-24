@@ -8,7 +8,19 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const body = await req.json();
-    const { vendorId, items, subtotal, tax, platformFee, totalAmount } = body;
+    
+    // ✅ FIXED: Extract customer details from body
+    const { 
+      vendorId, 
+      items, 
+      subtotal, 
+      tax, 
+      platformFee, 
+      totalAmount,
+      customerName,      // ✅ ADDED
+      customerPhone,     // ✅ ADDED
+      customerFcmToken   // ✅ ADDED
+    } = body;
 
     if (!vendorId || !items || items.length === 0) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -16,6 +28,7 @@ export async function POST(req: NextRequest) {
 
     const orderId = `ORD${nanoid(8)}`.toUpperCase();
 
+    // ✅ FIXED: Save customer details in order
     const order = await Order.create({
       orderId,
       vendorId,
@@ -24,8 +37,20 @@ export async function POST(req: NextRequest) {
       tax,
       platformFee,
       totalAmount,
+      customerName,      // ✅ ADDED
+      customerPhone,     // ✅ ADDED
+      customerFcmToken,  // ✅ ADDED
       status: 'pending',
-      paymentStatus: 'paid',
+      paymentStatus: 'pending',
+    });
+
+    // ✅ ADDED: Log for debugging
+    console.log('✅ Order created with customer data:', {
+      orderId,
+      customerName,
+      customerPhone,
+      hasToken: !!customerFcmToken,
+      tokenPreview: customerFcmToken?.slice(0, 20) + '...'
     });
 
     return NextResponse.json({
@@ -55,7 +80,11 @@ export async function GET(req: NextRequest) {
     }
 
     if (vendorId) {
-      const orders = await Order.find({ vendorId }).sort({ createdAt: -1 });
+      const orders = await Order.find({
+        vendorId,
+        paymentStatus: 'paid', // ⭐ only paid orders visible
+      }).sort({ createdAt: -1 });
+
       return NextResponse.json(orders);
     }
 

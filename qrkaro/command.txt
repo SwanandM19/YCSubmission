@@ -1,0 +1,2 @@
+     Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch 'node_modules|\\.next|\\.git' } | Select-Object FullName
+>> D:\HARDDISK\projects\YCsubmissionproject\YCSubmission\qrkaro>

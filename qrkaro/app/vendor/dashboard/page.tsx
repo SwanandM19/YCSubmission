@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useVendorAuth } from '@/lib/vendorAuthStore';
+import NotificationPermission from '@/components/NotificationPermission'; // ✅ ADDED
 
 interface Order {
   orderId: string;
@@ -22,6 +23,14 @@ export default function VendorDashboardPage() {
   const [selectedTab, setSelectedTab] = useState<'pending' | 'inprogress' | 'completed'>('pending');
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [earningsGrowth, setEarningsGrowth] = useState(0);
+
+  // Store vendorId in localStorage when dashboard loads
+  useEffect(() => {
+    if (vendorId) {
+      localStorage.setItem('vendorId', vendorId);
+      console.log('✅ Stored vendorId in localStorage:', vendorId);
+    }
+  }, [vendorId]);
 
   useEffect(() => {
     if (!isAuthenticated || !vendorId) {
@@ -108,6 +117,17 @@ export default function VendorDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+      {/* ✅ ADDED: Notification Permission Component */}
+      {vendorId && (
+        <NotificationPermission 
+          userType="vendor" 
+          userId={vendorId}
+          onTokenReceived={(token) => {
+            console.log('✅ Vendor FCM token received:', token);
+          }}
+        />
+      )}
+
       {/* Header */}
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">

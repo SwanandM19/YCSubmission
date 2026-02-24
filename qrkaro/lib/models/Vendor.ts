@@ -19,6 +19,7 @@ export interface IVendor extends Document {
   subscriptionAmount: number;
   subscriptionDate?: Date;
   isActive: boolean;
+  fcmTokens?: string[]; // ✅ ADDED: FCM tokens for push notifications
   createdAt: Date;
   updatedAt: Date;
 }
@@ -83,14 +84,15 @@ const VendorSchema = new Schema<IVendor>(
       type: Boolean,
       default: true,
     },
+    // ✅ ADDED: Array of FCM tokens (vendor can have multiple devices)
+    fcmTokens: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,
   }
 );
-
-// Remove the duplicate index definitions - they're already defined with unique: true above
-// VendorSchema.index({ vendorId: 1 });
-// VendorSchema.index({ phone: 1 });
 
 export default mongoose.models.Vendor || mongoose.model<IVendor>('Vendor', VendorSchema);
