@@ -90,6 +90,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+
+export const runtime = 'nodejs';
 import connectDB from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
 
