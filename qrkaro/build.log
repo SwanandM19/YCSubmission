@@ -1,0 +1,73 @@
+
+> qrkaro@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 10.0s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+(node:12984) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:20932) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+  Generating static pages using 11 workers (0/42) ...
+  Generating static pages using 11 workers (10/42) 
+  Generating static pages using 11 workers (20/42) 
+  Generating static pages using 11 workers (31/42) 
+(node:30964) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✓ Generating static pages using 11 workers (42/42) in 521.0ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /admin/earnings
+├ ○ /admin/login
+├ ○ /admin/settings
+├ ○ /admin/transactions
+├ ○ /admin/vendors
+├ ƒ /api/admin/auth
+├ ƒ /api/admin/dashboard
+├ ƒ /api/admin/earnings
+├ ƒ /api/admin/stats
+├ ƒ /api/admin/transactions
+├ ƒ /api/admin/update-vendor
+├ ƒ /api/admin/vendors
+├ ƒ /api/notifications/register-token
+├ ƒ /api/notifications/send
+├ ƒ /api/orders
+├ ƒ /api/orders/update
+├ ƒ /api/razorpay/create-order
+├ ƒ /api/razorpay/create-subscription-order
+├ ƒ /api/razorpay/get-key
+├ ƒ /api/razorpay/payout
+├ ƒ /api/razorpay/verify-payment
+├ ƒ /api/razorpay/verify-subscription-payment
+├ ƒ /api/translate
+├ ƒ /api/vendor
+├ ƒ /api/vendor/change-password
+├ ƒ /api/vendor/insights
+├ ƒ /api/vendor/login
+├ ƒ /api/vendor/menu
+├ ƒ /api/vendor/update-shop
+├ ○ /onboard
+├ ○ /success
+├ ƒ /v/[vendorId]
+├ ƒ /v/[vendorId]/cart
+├ ƒ /v/[vendorId]/order-success
+├ ○ /vendor/dashboard
+├ ○ /vendor/dashboard/insights
+├ ○ /vendor/dashboard/menu
+├ ○ /vendor/dashboard/settings
+├ ○ /vendor/dashboard/settings/edit-shop
+└ ○ /vendor/login
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
