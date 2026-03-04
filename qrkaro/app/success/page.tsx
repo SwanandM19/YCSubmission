@@ -267,9 +267,11 @@ export default function SuccessPage() {
     }
   };
 
-  const customerMenuUrl = `${window.location.origin}/v/${vendorId}`;
-  const vendorDashboardUrl = `${window.location.origin}/vendor/login`;
-
+  // const customerMenuUrl = `${window.location.origin}/v/${vendorId}`;
+  // const vendorDashboardUrl = `${window.location.origin}/vendor/login`;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const customerMenuUrl = `${baseUrl}/v/${vendorId}`;
+  const vendorDashboardUrl = `${baseUrl}/vendor/login`;
   const downloadQR = () => {
     const svg = document.getElementById('qr-code');
     if (!svg) return;

@@ -1,2 +1,7 @@
      Get-ChildItem -Recurse -File | Where-Object { $_.FullName -notmatch 'node_modules|\\.next|\\.git' } | Select-Object FullName
 >> D:\HARDDISK\projects\YCsubmissionproject\YCSubmission\qrkaro>
+
+
+https://ooommmggg-menu-extractor-api.hf.space/extract-menu
+
+http://127.0.0.1:5000/extract-menu
