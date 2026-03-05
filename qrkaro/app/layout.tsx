@@ -29,7 +29,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Nosher - Digital Ordering for Local Businesses",
+  title: {default: "Nosher - Digital Ordering for Local Businesses", template: "%s | Nosher"},
   description: "Set up digital ordering and payments in minutes",
 };
 
