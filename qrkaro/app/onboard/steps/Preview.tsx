@@ -176,6 +176,7 @@ interface EditablePaymentDetails {
 
 export default function Preview() {
   const store = useOnboardingStore();
+  const shopType = store.shopType;
 
   // ── Edit mode toggles ──────────────────────────────────────────────────────
   const [editingShop, setEditingShop] = useState(false);
@@ -255,9 +256,12 @@ export default function Preview() {
     store.setCurrentStep(5);
   };
 
+  // const handleBack = () => {
+  //   store.setCurrentStep(3);
+  // };
   const handleBack = () => {
-    store.setCurrentStep(3);
-  };
+  store.setCurrentStep(shopType === 'Xerox Shop' ? 1 : 2);
+};
 
   // ── Edit Pencil Button ─────────────────────────────────────────────────────
   const EditBtn = ({ onClick }: { onClick: () => void }) => (
@@ -417,6 +421,7 @@ export default function Preview() {
         </div>
 
         {/* ── MENU ITEMS ───────────────────────────────────────────────────── */}
+        {shopType !== 'Xerox Shop' && (
         <div className="border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">
@@ -513,6 +518,7 @@ export default function Preview() {
             ))}
           </div>
         </div>
+        )} 
 
         {/* ── PAYMENT DETAILS ──────────────────────────────────────────────── */}
         <div className="border border-gray-200 rounded-2xl p-5">

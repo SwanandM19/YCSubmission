@@ -8,11 +8,13 @@ import Preview from './steps/Preview';
 import SubscriptionPayment from './steps/SubscriptionPayment';
 
 export default function OnboardingPage() {
-  const { currentStep } = useOnboardingStore();
+  const { currentStep, shopType } = useOnboardingStore();
+
+  const isXerox = shopType === 'Xerox Shop'; // ← ADDED
 
   const steps = [
     { id: 1, label: 'Shop Details' },
-    { id: 2, label: 'Menu' },
+    ...(!isXerox ? [{ id: 2, label: 'Menu' }] : []),  // ← CHANGED
     { id: 3, label: 'Payment Info' },
     { id: 4, label: 'Preview' },
     { id: 5, label: 'Payment' },
@@ -42,12 +44,19 @@ export default function OnboardingPage() {
                         : 'bg-gray-200 text-gray-500'
                     }`}
                   >
-                    {currentStep > step.id ? (
+                    {/* {currentStep > step.id ? (
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     ) : (
                       step.id
+                    )} */}
+                    {currentStep > step.id ? (
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      index + 1
                     )}
                   </div>
                   <span
@@ -73,7 +82,7 @@ export default function OnboardingPage() {
         {/* Step Content */}
         <div className="transition-all duration-300">
           {currentStep === 1 && <ShopDetails />}
-          {currentStep === 2 && <MenuInput />}
+          {currentStep === 2 && !isXerox && <MenuInput />}  {/* ← CHANGED */}
           {currentStep === 3 && <PaymentDetails />}
           {currentStep === 4 && <Preview />}
           {currentStep === 5 && <SubscriptionPayment />}

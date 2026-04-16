@@ -354,7 +354,7 @@ export default function PaymentDetails() {
                 Instant Payments to Your UPI
               </p>
               <p className="text-sm text-green-700 mt-1">
-                You'll receive 95% of each order amount directly to your UPI within seconds. Platform keeps 5% as service fee.
+                You'll receive each order amount directly to your UPI within seconds.
               </p>
             </div>
           </div>

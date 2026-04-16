@@ -119,10 +119,22 @@ export async function POST(req: NextRequest) {
       {
         paymentStatus: 'paid',
         paymentId: razorpay_payment_id,
+        // paymentId: razorpay_payment_id,        // existing field
+        razorpayPaymentId: razorpay_payment_id, // ← ADD THIS
         status: 'pending',
       },
       { new: true }
     );
+
+//     await Order.findOneAndUpdate(
+//   { orderId },
+//   {
+//     paymentStatus: 'paid',
+//     paymentId: razorpay_payment_id,        // existing field
+//     razorpayPaymentId: razorpay_payment_id, // ← ADD THIS
+//     status: 'pending',
+//   }
+// );
 
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });

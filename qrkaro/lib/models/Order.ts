@@ -6,10 +6,14 @@ export interface IOrder {
   items: { name: string; price: number; quantity: number }[];
   subtotal: number;
   tax: number;
-  platformFee: number;
+  // platformFee: number;
   totalAmount: number;
   paymentStatus: 'pending' | 'paid' | 'failed';
   paymentId?: string;
+  // razorpayPaymentId?: string;
+  refundId?: string;
+  refundStatus?: string;
+  refundedAt?: Date;
   
   // Payout tracking
   payoutStatus: 'pending' | 'processing' | 'completed' | 'failed';
@@ -49,7 +53,7 @@ const OrderSchema = new Schema<IOrder>(
     ],
     subtotal: Number,
     tax: Number,
-    platformFee: Number,
+    // platformFee: Number,
     totalAmount: Number,
     
     paymentStatus: {
@@ -58,6 +62,11 @@ const OrderSchema = new Schema<IOrder>(
       default: 'pending',
     },
     paymentId: String,
+
+    // razorpayPaymentId: { type: String, default: null },
+    refundId:          { type: String, default: null },
+    refundStatus:      { type: String, default: null },
+    refundedAt:        { type: Date,   default: null },
     
     payoutStatus: {
       type: String,

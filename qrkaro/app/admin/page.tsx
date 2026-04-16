@@ -274,12 +274,17 @@ function DonutChart({ data, colors }: {
 
   return (
     <div className="flex items-center gap-6">
-      <div
+      {/* <div
         className="w-28 h-28 rounded-full flex-shrink-0"
         style={{ background: `conic-gradient(${gradient})` }}
+      > */}
+      <div
+        className="w-28 h-28 rounded-full flex-shrink-0 relative"  // ← add relative
+        style={{ background: `conic-gradient(${gradient})` }}
       >
-        <div className="w-full h-full rounded-full flex items-center justify-center"
-          style={{ margin: '14px', width: 'calc(100% - 28px)', height: 'calc(100% - 28px)', background: 'white' }}>
+        {/* <div className="w-full h-full rounded-full flex items-center justify-center"
+          style={{ margin: '14px', width: 'calc(100% - 28px)', height: 'calc(100% - 28px)', background: 'white' }}> */}
+        <div className="absolute inset-[14px] rounded-full bg-white flex items-center justify-center">
           <span className="text-xs font-bold text-gray-700">{total}</span>
         </div>
       </div>

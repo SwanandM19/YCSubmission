@@ -126,6 +126,7 @@ export default function SubscriptionPayment() {
 
   const createVendor = async () => {
     try {
+      console.log('🏪 Creating vendor with shopType:', store.shopType);
       const response = await fetch('/api/vendor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

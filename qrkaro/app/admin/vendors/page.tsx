@@ -467,7 +467,8 @@ interface Vendor {
   passwordChangedAt?: string;
 }
 
-const SHOP_TYPES = ['Restaurant', 'Cafe', 'Stall', 'Xerox', 'Grocery', 'Retail', 'Other'];
+// const SHOP_TYPES = ['Restaurant', 'Cafe', 'Stall', 'Xerox', 'Grocery', 'Retail', 'Other'];
+const SHOP_TYPES = ['Restaurant', 'Cafe', 'Stall', 'Xerox Shop', 'Grocery Store', 'Retail', 'Other'];
 
 export default function AdminVendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);

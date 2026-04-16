@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light only;   /* ✅ ADD THIS */
 }
 
 @theme inline {
@@ -12,17 +13,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/* ❌ DELETE THIS ENTIRE BLOCK — this was causing dark mode */
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #ffffff;   /* ✅ fixed white, not variable */
+  color: #171717;        /* ✅ fixed dark, not variable */
   font-family: Arial, Helvetica, sans-serif;
+  top: 0px !important;
 }
 
 @keyframes slideUp {
@@ -32,35 +35,25 @@ body {
 
 /* ================= GOOGLE TRANSLATE FIX ================= */
 
-/* Hide top blue banner */
 .goog-te-banner-frame,
 .goog-te-banner-frame.skiptranslate {
   display: none !important;
 }
 
-/* Remove body shift */
-body {
-  top: 0px !important;
-}
-
-/* Hide Google tooltip */
 .goog-tooltip {
   display: none !important;
 }
 
-/* Remove highlight background */
 .goog-text-highlight {
   background: none !important;
   box-shadow: none !important;
 }
 
-/* Hide Google logo & text */
 .goog-logo-link,
 .goog-te-gadget span {
   display: none !important;
 }
 
-/* Extra force hide */
 iframe.goog-te-banner-frame {
   display: none !important;
 }

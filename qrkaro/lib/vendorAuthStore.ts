@@ -113,16 +113,68 @@
 // export const useVendorAuth = useVendorAuthStore;
 
 
+// import { create } from 'zustand';
+// import { persist } from 'zustand/middleware';
+
+// interface VendorState {
+//   vendorId: string | null;
+//   shopName: string | null;
+//   isAuthenticated: boolean;
+//   _hasHydrated: boolean;
+//   setVendor: (data: { vendorId: string; shopName: string }) => void;
+//   login: (vendorId: string, shopName: string) => void; // ✅ keep backward compat
+//   logout: () => void;
+//   setHasHydrated: (val: boolean) => void;
+// }
+
+// export const useVendorAuthStore = create<VendorState>()(
+//   persist(
+//     (set) => ({
+//       vendorId: null,
+//       shopName: null,
+//       isAuthenticated: false,
+//       _hasHydrated: false,
+
+//       setVendor: ({ vendorId, shopName }) =>
+//         set({ vendorId, shopName, isAuthenticated: true }),
+
+//       // ✅ backward compat for login page
+//       login: (vendorId, shopName) =>
+//         set({ vendorId, shopName, isAuthenticated: true }),
+
+//       logout: () => {
+//         // ✅ Nuke the persisted key from localStorage directly
+//         if (typeof window !== 'undefined') {
+//           localStorage.removeItem('vendor-auth');
+//           localStorage.removeItem('vendorId'); // manual key from dashboard
+//         }
+//         set({ vendorId: null, shopName: null, isAuthenticated: false });
+//       },
+
+//       setHasHydrated: (val) => set({ _hasHydrated: val }),
+//     }),
+//     {
+//       name: 'vendor-auth',
+//       onRehydrateStorage: () => (state) => {
+//         state?.setHasHydrated(true);
+//       },
+//     }
+//   )
+// );
+
+// export const useVendorAuth = useVendorAuthStore;
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface VendorState {
   vendorId: string | null;
   shopName: string | null;
+  shopType: string | null; // ✅ ADDED
   isAuthenticated: boolean;
   _hasHydrated: boolean;
-  setVendor: (data: { vendorId: string; shopName: string }) => void;
-  login: (vendorId: string, shopName: string) => void; // ✅ keep backward compat
+  setVendor: (data: { vendorId: string; shopName: string; shopType?: string }) => void;
+  login: (vendorId: string, shopName: string, shopType?: string) => void;
   logout: () => void;
   setHasHydrated: (val: boolean) => void;
 }
@@ -132,23 +184,22 @@ export const useVendorAuthStore = create<VendorState>()(
     (set) => ({
       vendorId: null,
       shopName: null,
+      shopType: null, // ✅ ADDED
       isAuthenticated: false,
       _hasHydrated: false,
 
-      setVendor: ({ vendorId, shopName }) =>
-        set({ vendorId, shopName, isAuthenticated: true }),
+      setVendor: ({ vendorId, shopName, shopType }) =>
+        set({ vendorId, shopName, shopType: shopType || null, isAuthenticated: true }),
 
-      // ✅ backward compat for login page
-      login: (vendorId, shopName) =>
-        set({ vendorId, shopName, isAuthenticated: true }),
+      login: (vendorId, shopName, shopType) =>
+        set({ vendorId, shopName, shopType: shopType || null, isAuthenticated: true }),
 
       logout: () => {
-        // ✅ Nuke the persisted key from localStorage directly
         if (typeof window !== 'undefined') {
           localStorage.removeItem('vendor-auth');
-          localStorage.removeItem('vendorId'); // manual key from dashboard
+          localStorage.removeItem('vendorId');
         }
-        set({ vendorId: null, shopName: null, isAuthenticated: false });
+        set({ vendorId: null, shopName: null, shopType: null, isAuthenticated: false });
       },
 
       setHasHydrated: (val) => set({ _hasHydrated: val }),

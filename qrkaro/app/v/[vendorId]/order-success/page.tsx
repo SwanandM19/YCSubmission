@@ -155,7 +155,7 @@ import { useSearchParams, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
-import { requestNotificationPermission } from "@/lib/firebase";
+// import { requestNotificationPermission } from "@/lib/firebase";
 
 
 export default function OrderSuccessPage() {
@@ -320,11 +320,11 @@ export default function OrderSuccessPage() {
     doc.text(`₹${order.tax.toFixed(2)}`, 185, yPos, { align: 'right' });
     
     // Platform Fee
-    yPos += 8;
-    doc.setTextColor(...lightGray);
-    doc.text('Platform Fee', 120, yPos);
-    doc.setTextColor(...darkGray);
-    doc.text(`₹${order.platformFee.toFixed(2)}`, 185, yPos, { align: 'right' });
+    // yPos += 8;
+    // doc.setTextColor(...lightGray);
+    // doc.text('Platform Fee', 120, yPos);
+    // doc.setTextColor(...darkGray);
+    // doc.text(`₹${order.platformFee.toFixed(2)}`, 185, yPos, { align: 'right' });
 
     // Total Box
     yPos += 12;
@@ -382,7 +382,8 @@ export default function OrderSuccessPage() {
             <div className="bg-orange-50 rounded-lg p-4 mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-xl">Q</span>
+                  {/* <span className="text-white font-bold text-xl">Q</span> */}
+                  <span className="text-white font-bold text-xl">N</span>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">{vendor.shopName}</p>
@@ -409,10 +410,10 @@ export default function OrderSuccessPage() {
                 <span>Tax (5%)</span>
                 <span>₹{order.tax.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              {/* <div className="flex justify-between text-gray-600">
                 <span>Platform Fee</span>
                 <span>₹{order.platformFee.toFixed(2)}</span>
-              </div>
+              </div> */}
               <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
                 <span>Total Paid</span>
                 <span className="text-green-600">₹{order.totalAmount.toFixed(2)}</span>

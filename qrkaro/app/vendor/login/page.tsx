@@ -41,7 +41,8 @@ export default function VendorLogin() {
         return;
       }
 
-      setVendor({ vendorId: data.vendorId, shopName: data.shopName });
+      // setVendor({ vendorId: data.vendorId, shopName: data.shopName });
+      setVendor({ vendorId: data.vendorId, shopName: data.shopName, shopType: data.shopType });
 
       // ✅ Check if still using default password (vendorId as password)
       if (formData.password === formData.vendorId) {

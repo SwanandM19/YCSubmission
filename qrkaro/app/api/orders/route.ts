@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
+import Vendor from '@/lib/models/Vendor';
 import { nanoid } from 'nanoid';
 
 export async function POST(req: NextRequest) {
@@ -15,7 +16,7 @@ export async function POST(req: NextRequest) {
       items, 
       subtotal, 
       tax, 
-      platformFee, 
+      // platformFee, 
       totalAmount,
       customerName,      // ✅ ADDED
       customerPhone,     // ✅ ADDED
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
       items,
       subtotal,
       tax,
-      platformFee,
+      // platformFee,
       totalAmount,
       customerName,      // ✅ ADDED
       customerPhone,     // ✅ ADDED
@@ -52,6 +53,33 @@ export async function POST(req: NextRequest) {
       hasToken: !!customerFcmToken,
       tokenPreview: customerFcmToken?.slice(0, 20) + '...'
     });
+
+    try {
+      const vendor = await Vendor.findOne({ vendorId });
+      if (vendor) {
+        let stockChanged = false;
+        items.forEach((orderedItem: any) => {
+          const menuItem = vendor.menuItems.find(
+            (m: any) => m.name === orderedItem.name
+          );
+          // Only deduct if stock is tracked (not null = unlimited)
+          if (menuItem && menuItem.stock !== null && menuItem.stock !== undefined) {
+            menuItem.stock = Math.max(0, menuItem.stock - orderedItem.quantity);
+            // Auto mark unavailable when hits zero
+            if (menuItem.stock === 0) {
+              menuItem.available = false;
+            }
+            stockChanged = true;
+          }
+        });
+        if (stockChanged) await vendor.save();
+        console.log('✅ Stock deducted for order:', orderId);
+      }
+    } catch (stockError) {
+      // Never block order creation if stock update fails
+      console.error('⚠️ Stock deduction failed (non-blocking):', stockError);
+    }
+    // ✅ END OF ADDED BLOCK
 
     return NextResponse.json({
       success: true,

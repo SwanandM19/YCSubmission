@@ -1,5 +1,5 @@
 
-// // app/api/vendor/login/route.ts
+
 // import { NextRequest, NextResponse } from 'next/server';
 // import connectDB from '@/lib/db';
 // import Vendor from '@/lib/models/Vendor';
@@ -25,15 +25,12 @@
 //       );
 //     }
 
-//     // ✅ Handle vendors created before password feature was added
+//     // ✅ Handle vendors created before password feature (no password field)
 //     if (!vendor.password) {
-//       // Auto-migrate: set their default password = vendorId
 //       const hashed = await bcrypt.hash(vendorId, 10);
 //       await Vendor.findOneAndUpdate({ vendorId }, { password: hashed });
 
-//       // Now compare
-//       const isMatch = password === vendorId;
-//       if (!isMatch) {
+//       if (password !== vendorId) {
 //         return NextResponse.json(
 //           { error: 'Invalid Vendor ID or password' },
 //           { status: 401 }
@@ -44,11 +41,13 @@
 //         success: true,
 //         vendorId: vendor.vendorId,
 //         shopName: vendor.shopName,
+//         shopType: vendor.shopType,
 //       });
 //     }
 
-//     // ✅ Normal flow: compare hashed password
+//     // ✅ Normal bcrypt compare
 //     const isMatch = await bcrypt.compare(password, vendor.password);
+
 //     if (!isMatch) {
 //       return NextResponse.json(
 //         { error: 'Invalid Vendor ID or password' },
@@ -60,6 +59,7 @@
 //       success: true,
 //       vendorId: vendor.vendorId,
 //       shopName: vendor.shopName,
+//       shopType: vendor.shopType,
 //     });
 
 //   } catch (error: any) {
@@ -69,7 +69,7 @@
 //       { status: 500 }
 //     );
 //   }
-// }
+// } // ✅ This closing brace was MISSING — caused the 401
 
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         { error: 'Vendor ID and password are required' },
         { status: 400 }
       );
-    }
+    } // ✅ THIS } WAS MISSING
 
     const vendor = await Vendor.findOne({ vendorId });
     if (!vendor) {
@@ -95,9 +95,9 @@ export async function POST(req: NextRequest) {
         { error: 'Invalid Vendor ID or password' },
         { status: 401 }
       );
-    }
+    } // ✅ THIS } WAS MISSING
 
-    // ✅ Handle vendors created before password feature (no password field)
+    // Handle vendors created before password feature
     if (!vendor.password) {
       const hashed = await bcrypt.hash(vendorId, 10);
       await Vendor.findOneAndUpdate({ vendorId }, { password: hashed });
@@ -107,29 +107,30 @@ export async function POST(req: NextRequest) {
           { error: 'Invalid Vendor ID or password' },
           { status: 401 }
         );
-      }
+      } // ✅ THIS } WAS MISSING
 
       return NextResponse.json({
         success: true,
         vendorId: vendor.vendorId,
         shopName: vendor.shopName,
+        shopType: vendor.shopType,
       });
-    }
+    } // ✅ THIS } WAS MISSING
 
-    // ✅ Normal bcrypt compare
+    // Normal bcrypt compare
     const isMatch = await bcrypt.compare(password, vendor.password);
-
     if (!isMatch) {
       return NextResponse.json(
         { error: 'Invalid Vendor ID or password' },
         { status: 401 }
       );
-    }
+    } // ✅ THIS } WAS MISSING
 
     return NextResponse.json({
       success: true,
       vendorId: vendor.vendorId,
       shopName: vendor.shopName,
+      shopType: vendor.shopType, // ✅ shopType included
     });
 
   } catch (error: any) {
@@ -139,4 +140,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-} // ✅ This closing brace was MISSING — caused the 401
+}

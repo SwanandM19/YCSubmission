@@ -24,8 +24,9 @@ export default function CartPage() {
 
   const subtotal = getTotal();
   const tax = subtotal * 0.05; // 5% tax
-  const platformFee = 5;
-  const total = subtotal + tax + platformFee;
+  // const platformFee = 5;
+  // const total = subtotal + tax + platformFee;
+  const total = subtotal + tax;
 
   // ✅ ADDED: Request notification permission when page loads
   useEffect(() => {
@@ -75,7 +76,7 @@ export default function CartPage() {
           items,
           subtotal,
           tax,
-          platformFee,
+          // platformFee,
           totalAmount: total,
           customerName: customerName.trim(), // ✅ ADDED
           customerPhone: customerPhone.trim(), // ✅ ADDED
@@ -356,10 +357,10 @@ export default function CartPage() {
                     <span>Tax / GST (5%)</span>
                     <span className="font-medium">₹{tax.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  {/* <div className="flex justify-between text-gray-600">
                     <span>Platform Fee</span>
                     <span className="font-medium">₹{platformFee.toFixed(2)}</span>
-                  </div>
+                  </div> */}
                   <div className="border-t pt-4 flex justify-between text-lg font-bold text-gray-900">
                     <span>Total Amount</span>
                     <span className="text-orange-600">₹{total.toFixed(2)}</span>
