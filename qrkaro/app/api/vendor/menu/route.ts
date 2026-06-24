@@ -322,6 +322,7 @@
 //     return NextResponse.json({ error: error.message }, { status: 500 });
 //   }
 // }
+
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Vendor from '@/lib/models/Vendor';
@@ -334,6 +335,28 @@ const ALLOWED_CATEGORIES = new Set([
 function normalizeCategory(cat: any): string {
   const c = String(cat || '').trim();
   return ALLOWED_CATEGORIES.has(c) ? c : 'Other';
+}
+
+function normalizeMenuItem(i: any, existingItem?: any) {
+  return {
+    ...(existingItem ? existingItem.toObject?.() || existingItem : {}),
+    name: String(i.name || '').trim(),
+    price: parseFloat(i.price) || 0,
+    available: i.available !== false,
+    category: normalizeCategory(i.category),
+    stock:
+      i.stock === '' || i.stock === null || i.stock === undefined
+        ? (existingItem?.stock ?? 0)
+        : Number(i.stock),
+    lowStockThreshold:
+      i.lowStockThreshold === '' || i.lowStockThreshold === null || i.lowStockThreshold === undefined
+        ? (existingItem?.lowStockThreshold ?? 5)
+        : Number(i.lowStockThreshold),
+    unit: i.unit ?? existingItem?.unit ?? '',
+    sku: i.sku ?? existingItem?.sku ?? '',
+    desc: i.desc ?? existingItem?.desc ?? '',
+    isVeg: i.isVeg ?? existingItem?.isVeg ?? true,
+  };
 }
 
 // GET - Fetch menu
@@ -367,12 +390,13 @@ export async function POST(req: NextRequest) {
     if (!vendor) return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
 
     // ✅ category is now saved
-    vendor.menuItems.push({
-      name: String(item.name).trim(),
-      price: parseFloat(item.price) || 0,
-      available: item.available !== false,
-      category: normalizeCategory(item.category),
-    });
+    // vendor.menuItems.push({
+    //   name: String(item.name).trim(),
+    //   price: parseFloat(item.price) || 0,
+    //   available: item.available !== false,
+    //   category: normalizeCategory(item.category),
+    // });
+    vendor.menuItems.push(normalizeMenuItem(item));
 
     await vendor.save();
     return NextResponse.json({ success: true, menuItems: vendor.menuItems });
@@ -395,14 +419,15 @@ export async function PUT(req: NextRequest) {
 
     // ✅ Bulk replace (used by onboarding after menu scan)
     if (Array.isArray(body.menuItems)) {
-      vendor.menuItems = body.menuItems
-        .filter((i: any) => String(i.name || '').trim().length > 0)
-        .map((i: any) => ({
-          name: String(i.name).trim(),
-          price: parseFloat(i.price) || 0,
-          available: i.available !== false,
-          category: normalizeCategory(i.category), // ✅ saved
-        }));
+     vendor.menuItems = body.menuItems
+  .filter((i: any) => String(i.name || '').trim().length > 0)
+  .map((i: any) => {
+    const existingItem = i._id
+      ? vendor.menuItems.find((m: any) => m._id?.toString() === i._id?.toString())
+      : undefined;
+
+    return normalizeMenuItem(i, existingItem);
+  });
       await vendor.save();
       return NextResponse.json({ success: true, menuItems: vendor.menuItems });
     }
@@ -416,13 +441,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid item index' }, { status: 400 });
     }
 
-    vendor.menuItems[index] = {
-      ...vendor.menuItems[index].toObject(),
-      name: String(item.name).trim(),
-      price: parseFloat(item.price) || 0,
-      available: item.available !== false,
-      category: normalizeCategory(item.category), // ✅ saved
-    };
+    // vendor.menuItems[index] = {
+    //   ...vendor.menuItems[index].toObject(),
+    //   name: String(item.name).trim(),
+    //   price: parseFloat(item.price) || 0,
+    //   available: item.available !== false,
+    //   category: normalizeCategory(item.category), // ✅ saved
+    // };
+    vendor.menuItems[index] = normalizeMenuItem(item, vendor.menuItems[index]);
 
     await vendor.save();
     return NextResponse.json({ success: true, menuItems: vendor.menuItems });

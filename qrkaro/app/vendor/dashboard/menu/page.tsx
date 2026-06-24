@@ -504,12 +504,26 @@ import { useEffect, useState, useRef } from 'react';
 import { useVendorAuthStore } from '@/lib/vendorAuthStore';
 import { useRouter } from 'next/navigation';
 
+// interface MenuItem {
+//   _id?: string;
+//   name: string;
+//   price: number;
+//   available: boolean;
+//   category: string;
+// }
+
 interface MenuItem {
   _id?: string;
   name: string;
   price: number;
   available: boolean;
   category: string;
+  stock?: number | null;
+  lowStockThreshold?: number;
+  unit?: string;
+  sku?: string;
+  desc?: string;
+  isVeg?: boolean;
 }
 
 const FOOD_CATEGORIES = [
@@ -556,11 +570,17 @@ export default function MenuManagementPage() {
   const originalNamesRef = useRef<string[]>([]);
   const [displayNames, setDisplayNames] = useState<string[]>([]);
   const [newItem, setNewItem] = useState<MenuItem>({
-    name: '',
-    price: 0,
-    available: true,
-    category: 'Other',
-  });
+  name: '',
+  price: 0,
+  available: true,
+  category: 'Other',
+  stock: 0,
+  lowStockThreshold: 5,
+  unit: '',
+  sku: '',
+  desc: '',
+  isVeg: true,
+});
 
   // ✅ Wait for Zustand hydration before checking auth
   // useEffect(() => {
@@ -701,7 +721,19 @@ const translateNames = async (targetLang: string) => {
     }
     const updated = [...menuItems, { ...newItem, name: newItem.name.trim() }];
     setMenuItems(updated);
-    setNewItem({ name: '', price: 0, available: true, category: 'Other' });
+    // setNewItem({ name: '', price: 0, available: true, category: 'Other' });
+    setNewItem({
+  name: '',
+  price: 0,
+  available: true,
+  category: 'Other',
+  stock: 0,
+  lowStockThreshold: 5,
+  unit: '',
+  sku: '',
+  desc: '',
+  isVeg: true,
+});
     setShowAddForm(false);
     setErrorMsg('');
     saveMenu(updated);

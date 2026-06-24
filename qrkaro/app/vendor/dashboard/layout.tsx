@@ -665,6 +665,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useVendorAuthStore } from '@/lib/vendorAuthStore';
 
 export default function VendorDashboardLayout({
@@ -697,6 +698,109 @@ export default function VendorDashboardLayout({
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const { vendorId } = useVendorAuthStore();
+
+interface VendorNotification {
+  orderId: string;
+  type: 'new_order' | 'completed' | 'cancelled';
+  title: string;
+  body: string;
+  createdAt: string;
+  read: boolean;
+}
+
+const [notifications, setNotifications] = useState<VendorNotification[]>([]);
+const [notifLoading, setNotifLoading] = useState(false);
+const [unreadCount, setUnreadCount] = useState(0);
+
+const getTimeAgo = (date: string) => {
+  const diff = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
+  if (diff < 1) return 'Just now';
+  if (diff < 60) return `${diff}m ago`;
+  const h = Math.floor(diff / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+};
+
+// const fetchNotifications = async () => {
+//   if (!vendorId) return;
+//   setNotifLoading(true);
+//   try {
+//     const res = await fetch(`/api/notifications/vendor?vendorId=${vendorId}`);
+//     const data = await res.json();
+//     if (data.success) {
+//       setNotifications(data.notifications);
+//       setUnreadCount(data.notifications.filter((n: VendorNotification) => !n.read).length);
+//     }
+//   } catch {}
+//   finally { setNotifLoading(false); }
+// };
+
+const fetchNotifications = async () => {
+  if (!vendorId) return;
+  setNotifLoading(true);
+
+  try {
+    const res = await fetch(`/api/notifications/vendor?vendorId=${vendorId}`);
+    const data = await res.json();
+
+    if (data.success) {
+      setNotifications((prev) => {
+        const prevReadMap = new Map(
+          prev.map((n) => [`${n.orderId}-${n.createdAt}-${n.type}`, n.read])
+        );
+
+        const nextNotifications: VendorNotification[] = (data.notifications || []).map((n: VendorNotification) => {
+          const key = `${n.orderId}-${n.createdAt}-${n.type}`;
+          return {
+            ...n,
+            read: prevReadMap.get(key) ?? n.read,
+          };
+        });
+
+        setUnreadCount(nextNotifications.filter((n) => !n.read).length);
+        return nextNotifications;
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+  } finally {
+    setNotifLoading(false);
+  }
+};
+
+// const markAllRead = async () => {
+//   if (!vendorId) return;
+//   await fetch(`/api/notifications/vendor?vendorId=${vendorId}`, { method: 'PATCH' });
+//   setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+//   setUnreadCount(0);
+// };
+
+const markAllRead = async () => {
+  if (!vendorId) return;
+
+  try {
+    const res = await fetch('/api/notifications/vendor', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vendorId }),
+    });
+
+    if (!res.ok) throw new Error('Failed to mark notifications as read');
+
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+    setShowNotifications(false);
+  } catch (error) {
+    console.error('Error marking notifications as read:', error);
+  }
+};
+
+useEffect(() => {
+  fetchNotifications();
+  const interval = setInterval(fetchNotifications, 15000);
+  return () => clearInterval(interval);
+}, [vendorId]);
 
   // ✅ Each vendor type has its own "home" route
   const homeRoute =
@@ -829,9 +933,17 @@ export default function VendorDashboardLayout({
               </button>
             )}
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-sm shadow-orange-200">
+              {/* <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-sm shadow-orange-200">
                 <span className="text-white font-black text-base">N</span>
-              </div>
+              </div> */}
+              <Image
+  src="/nosher-logo.png"
+  alt="Nosher logo"
+  width={170}
+  height={56}
+  className="h-12 w-auto object-contain"
+  priority
+/>
               <div>
                 <p className="text-sm font-bold text-gray-900 leading-tight">{vendorName || 'Dashboard'}</p>
                 {/* ✅ Contextual subtitle based on shop type */}
@@ -850,57 +962,166 @@ export default function VendorDashboardLayout({
             </div>
 
             {/* Bell */}
-            <div className="relative" data-dropdown onClick={(e) => e.nativeEvent.stopImmediatePropagation()}>
-              <button
-                onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
-                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition relative"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-              </button>
+{/* <div className="relative" data-dropdown onClick={(e) => e.nativeEvent.stopImmediatePropagation()}>
+  <button
+    onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
+    className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition relative"
+  >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+    {unreadCount > 0 && (
+      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+    )}
+  </button>
 
-              {showNotifications && (
-                <div className="absolute right-0 top-11 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <p className="font-bold text-gray-900 text-sm">Notifications</p>
-                    <button onClick={() => setShowNotifications(false)} className="text-xs text-orange-500 font-semibold hover:text-orange-600">
-                      Mark all read
-                    </button>
-                  </div>
-                  <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
-                    <div className="px-4 py-3 hover:bg-gray-50 transition cursor-pointer">
-                      <div className="flex gap-3 items-start">
-                        <div className="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <span className="text-sm">🖨️</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">New print job received!</p>
-                          <p className="text-xs text-gray-500 mt-0.5">Job #4521 — ₹45.00</p>
-                          <p className="text-xs text-gray-400 mt-1">2 mins ago</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="px-4 py-3 hover:bg-gray-50 transition cursor-pointer">
-                      <div className="flex gap-3 items-start">
-                        <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <span className="text-sm">✅</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Job completed</p>
-                          <p className="text-xs text-gray-500 mt-0.5">Job #4520 marked as done</p>
-                          <p className="text-xs text-gray-400 mt-1">15 mins ago</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="px-4 py-10 text-center">
-                      <p className="text-xs text-gray-400">You're all caught up! 🎉</p>
-                    </div>
-                  </div>
+  {showNotifications && (
+    <div className="absolute right-0 top-11 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <p className="font-bold text-gray-900 text-sm">Notifications</p>
+        <button
+          onClick={markAllRead}
+          className="text-xs text-orange-500 font-semibold hover:text-orange-600"
+        >
+          Mark all read
+        </button>
+      </div>
+      <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+        {notifLoading ? (
+          <div className="px-4 py-8 text-center text-xs text-gray-400">Loading...</div>
+        ) : notifications.length === 0 ? (
+          <div className="px-4 py-10 text-center">
+            <p className="text-xs text-gray-400">You're all caught up! 🎉</p>
+          </div>
+        ) : (
+          notifications.map((n, i) => (
+            <div key={i} className={`px-4 py-3 hover:bg-gray-50 transition cursor-pointer ${!n.read ? 'bg-orange-50/40' : ''}`}>
+              <div className="flex gap-3 items-start">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                  n.type === 'new_order' ? 'bg-orange-100' :
+                  n.type === 'completed' ? 'bg-green-100' :
+                  n.type === 'cancelled' ? 'bg-red-100' : 'bg-gray-100'
+                }`}>
+                  <span className="text-sm">
+                    {n.type === 'new_order' ? '🔔' :
+                     n.type === 'completed' ? '✅' :
+                     n.type === 'cancelled' ? '❌' : '📋'}
+                  </span>
                 </div>
-              )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">{n.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 truncate">{n.body}</p>
+                  <p className="text-xs text-gray-400 mt-1">{getTimeAgo(n.createdAt)}</p>
+                </div>
+              </div>
             </div>
+          ))
+        )}
+      </div>
+    </div>
+  )}
+</div> */}
+<div
+  className="relative flex items-center gap-3"
+  data-dropdown
+  onClick={(e) => e.nativeEvent.stopImmediatePropagation()}
+>
+  <button
+    onClick={() => {
+      setShowNotifications((prev) => !prev);
+      setShowProfileMenu(false);
+    }}
+    className="relative w-11 h-11 bg-white border border-gray-200 rounded-2xl flex items-center justify-center shadow-sm hover:bg-gray-50 transition"
+  >
+    <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+      />
+    </svg>
+
+    {unreadCount > 0 && (
+      <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow">
+        {unreadCount}
+      </span>
+    )}
+  </button>
+
+  {showNotifications && (
+    <div className="absolute top-14 right-0 w-[340px] max-w-[calc(100vw-2rem)] bg-white border border-gray-100 rounded-2xl shadow-2xl z-50 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
+        {notifications.length > 0 && unreadCount > 0 && (
+          <button
+            onClick={markAllRead}
+            className="text-xs font-semibold text-orange-500 hover:text-orange-600 transition"
+          >
+            Mark all read
+          </button>
+        )}
+      </div>
+
+      <div className="max-h-96 overflow-y-auto">
+        {notifLoading ? (
+          <div className="px-4 py-8 text-center text-xs text-gray-400">Loading...</div>
+        ) : notifications.length === 0 ? (
+          <div className="py-10 px-4 text-center">
+            <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.8}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+            </div>
+            <p className="text-sm font-semibold text-gray-700">No notifications yet</p>
+            <p className="text-xs text-gray-400 mt-1">New order updates will appear here</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {notifications.map((n) => (
+              <div
+                key={`${n.orderId}-${n.createdAt}-${n.type}`}
+                className={`px-4 py-3 transition ${n.read ? 'bg-white' : 'bg-orange-50'}`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm ${
+                      n.read ? 'bg-gray-100' : 'bg-orange-100'
+                    }`}
+                  >
+                    {n.type === 'completed' ? '✅' : n.type === 'cancelled' ? '❌' : '🔔'}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold leading-snug ${n.read ? 'text-gray-700' : 'text-gray-900'}`}>
+                      {n.title}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">{n.body}</p>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {new Date(n.createdAt).toLocaleString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
+
+                  {!n.read && <span className="w-2 h-2 bg-orange-500 rounded-full mt-2" />}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+</div>
 
             {/* Profile */}
             <div className="relative" data-dropdown onClick={(e) => e.nativeEvent.stopImmediatePropagation()}>

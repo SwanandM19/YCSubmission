@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/cartStore';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from "next/image";
 import Script from 'next/script';
 import { requestNotificationPermission } from '@/lib/firebase'; // ✅ ADDED
 
@@ -15,18 +16,46 @@ export default function CartPage() {
   const { items, updateQuantity, removeItem, getTotal, clearCart } = useCartStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
-  
+
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && (window as any).Razorpay) {
+  //     setRazorpayLoaded(true);
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined' && (window as any).Razorpay) {
+  //     setRazorpayLoaded(true);
+  //   }
+  //   setIsProcessing(false);
+  // }, [items.length]);
+
+  useEffect(() => {
+  const checkRazorpay = () => {
+    if (typeof window !== 'undefined' && (window as any).Razorpay) {
+      setRazorpayLoaded(true);
+    }
+  };
+  checkRazorpay();
+  const t = setTimeout(checkRazorpay, 1500);
+  setIsProcessing(false);
+  return () => clearTimeout(t);
+}, [items.length]);
+
+
   // ✅ ADDED: Customer details
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerFcmToken, setCustomerFcmToken] = useState<string | null>(null);
-  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  // const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+
+
+  // const total = getTotal();
 
   const subtotal = getTotal();
-  const tax = subtotal * 0.05; // 5% tax
-  // const platformFee = 5;
-  // const total = subtotal + tax + platformFee;
-  const total = subtotal + tax;
+const GST_RATE = 0.05; // 5%
+const gstAmount = Number((subtotal * GST_RATE).toFixed(2));
+const grandTotal = Number((subtotal + gstAmount).toFixed(2));
 
   // ✅ ADDED: Request notification permission when page loads
   useEffect(() => {
@@ -53,6 +82,7 @@ export default function CartPage() {
   };
 
   const handlePayment = async () => {
+    if (isProcessing) return;
     // ✅ ADDED: Validate customer details
     if (!customerName.trim() || !customerPhone.trim()) {
       alert('Please enter your name and phone number');
@@ -74,13 +104,13 @@ export default function CartPage() {
         body: JSON.stringify({
           vendorId,
           items,
+          // totalAmount: total,
           subtotal,
-          tax,
-          // platformFee,
-          totalAmount: total,
-          customerName: customerName.trim(), // ✅ ADDED
-          customerPhone: customerPhone.trim(), // ✅ ADDED
-          customerFcmToken, // ✅ ADDED
+          gstAmount,
+          totalAmount: grandTotal,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          customerFcmToken,
         }),
       });
 
@@ -99,7 +129,8 @@ export default function CartPage() {
             userType: 'vendor',
             userId: vendorId,
             title: '🔔 New Order Received!',
-            body: `Order #${orderData.orderId.slice(-4)} - ${items.length} items - ₹${total.toFixed(2)}`,
+            // body: `Order #${orderData.orderId.slice(-4)} - ${items.length} items - ₹${total.toFixed(2)}`,
+            body: `Order #${orderData.orderId.slice(-4)} - ${items.length} items - ₹${grandTotal.toFixed(2)}`,
             data: {
               orderId: orderData.orderId,
               link: '/vendor/dashboard',
@@ -117,7 +148,8 @@ export default function CartPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: total,
+          // amount: total,
+          amount: grandTotal,
           orderId: orderData.orderId,
           vendorId,
         }),
@@ -153,13 +185,26 @@ export default function CartPage() {
 
             const verifyData = await verifyResponse.json();
 
+            // if (verifyResponse.ok && verifyData.success) {
+            //   clearCart();
+            //   router.push(`/v/${vendorId}/order-success?orderId=${orderData.orderId}`);
+            // } else {
+            //   throw new Error('Payment verification failed');
+            // }
             if (verifyResponse.ok && verifyData.success) {
+              setIsProcessing(false);
               clearCart();
               router.push(`/v/${vendorId}/order-success?orderId=${orderData.orderId}`);
             } else {
+              setIsProcessing(false);
               throw new Error('Payment verification failed');
             }
+            // } catch (error) {
+            //   alert('Payment verification failed. Please contact support.');
+            //   console.error('Verification error:', error);
+            // }
           } catch (error) {
+            setIsProcessing(false);
             alert('Payment verification failed. Please contact support.');
             console.error('Verification error:', error);
           }
@@ -172,7 +217,7 @@ export default function CartPage() {
           color: '#f97316',
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             setIsProcessing(false);
           }
         }
@@ -189,28 +234,53 @@ export default function CartPage() {
         throw new Error('Razorpay SDK not loaded');
       }
 
-    } catch (error: any) {
+        } catch (error: any) {
       alert(error.message || 'Payment failed. Please try again.');
       setIsProcessing(false);
+    } finally {
+      if (!(window as any).Razorpay) {
+        setIsProcessing(false);
+      }
     }
   };
 
-  if (items.length === 0) {
+  // if (items.length === 0) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //       <div className="text-center">
+  //         <svg className="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+  //         </svg>
+  //         <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
+  //         <p className="text-gray-600 mb-6">Add items to get started</p>
+  //         <Link
+  //           href={`/v/${vendorId}`}
+  //           className="inline-block px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition"
+  //         >
+  //           Browse Menu
+  //         </Link>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+    if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <svg className="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="w-20 h-20 bg-orange-50 rounded-2xl flex items-center justify-center">
+          <svg className="w-10 h-10 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-600 mb-6">Add items to get started</p>
-          <Link
-            href={`/v/${vendorId}`}
-            className="inline-block px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition"
-          >
-            Browse Menu
-          </Link>
         </div>
+        <h2 className="text-xl font-bold text-gray-900">Your cart is empty</h2>
+        <p className="text-sm text-gray-500 max-w-[200px]">Add items from the menu to place an order</p>
+        <Link
+          href={`/v/${vendorId}`}
+          className="mt-2 px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition text-sm"
+        >
+          Browse Menu
+        </Link>
       </div>
     );
   }
@@ -218,10 +288,16 @@ export default function CartPage() {
   return (
     <>
       {/* Load Razorpay Script */}
-      <Script 
+      {/* <Script 
         src="https://checkout.razorpay.com/v1/checkout.js"
         onLoad={() => setRazorpayLoaded(true)}
         strategy="lazyOnload"
+      /> */}
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        onLoad={() => setRazorpayLoaded(true)}
+        onError={() => setRazorpayLoaded(false)}
+        strategy="afterInteractive"
       />
 
       <div className="min-h-screen bg-gray-50 pb-20">
@@ -235,10 +311,14 @@ export default function CartPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </Link>
-                <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">N</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">Nosher</span>
+                <Image
+                  src="/nosher-logo.png"
+                  alt="Nosher logo"
+                  width={150}
+                  height={50}
+                  className="h-12 w-auto object-contain"
+                  priority
+                />
               </div>
             </div>
           </div>
@@ -260,7 +340,13 @@ export default function CartPage() {
                   <div key={index} className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4">
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                      {/* <p className="text-orange-600 font-semibold mt-1">₹{item.price}</p> */}
                       <p className="text-orange-600 font-semibold mt-1">₹{item.price}</p>
+                      {/* {typeof item.stock === 'number' && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {item.stock > 0 ? `Only ${item.stock} left` : 'Out of stock'}
+                        </p>
+                      )} */}
                     </div>
 
                     <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
@@ -271,9 +357,22 @@ export default function CartPage() {
                         −
                       </button>
                       <span className="font-semibold text-gray-900 w-6 text-center">{item.quantity}</span>
-                      <button
+                      {/* <button
                         onClick={() => updateQuantity(item.name, item.quantity + 1)}
                         className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-200 rounded transition"
+                      >
+                        +
+                      </button> */}
+                      <button
+                        onClick={() => {
+                          // const maxQty = typeof item.stock === 'number' ? item.stock : Infinity;
+                          // if (item.quantity < maxQty) {
+                          //   updateQuantity(item.name, item.quantity + 1);
+                          // }
+                          updateQuantity(item.name, item.quantity + 1);
+                        }}
+                        // disabled={typeof item.stock === 'number' && item.quantity >= item.stock}
+                        className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-200 rounded transition disabled:opacity-40 disabled:cursor-not-allowed"
                       >
                         +
                       </button>
@@ -348,24 +447,29 @@ export default function CartPage() {
                   )}
                 </div>
 
-                <div className="space-y-4 mb-6 pt-4 border-t">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span className="font-medium">₹{subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Tax / GST (5%)</span>
-                    <span className="font-medium">₹{tax.toFixed(2)}</span>
-                  </div>
-                  {/* <div className="flex justify-between text-gray-600">
-                    <span>Platform Fee</span>
-                    <span className="font-medium">₹{platformFee.toFixed(2)}</span>
-                  </div> */}
-                  <div className="border-t pt-4 flex justify-between text-lg font-bold text-gray-900">
+                {/* <div className="space-y-4 mb-6 pt-4 ">
+                  <div className=" pt-4 flex justify-between text-lg font-bold text-gray-900">
                     <span>Total Amount</span>
                     <span className="text-orange-600">₹{total.toFixed(2)}</span>
                   </div>
-                </div>
+                </div> */}
+
+                <div className="space-y-4 mb-6 pt-4 border-t border-gray-100">
+  <div className="flex justify-between text-sm text-gray-600">
+    <span>Subtotal</span>
+    <span>₹{subtotal.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-sm text-gray-600">
+    <span>GST (5%)</span>
+    <span>₹{gstAmount.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-100">
+    <span>Total Amount</span>
+    <span className="text-orange-600">₹{grandTotal.toFixed(2)}</span>
+  </div>
+</div>
 
                 <button
                   onClick={handlePayment}

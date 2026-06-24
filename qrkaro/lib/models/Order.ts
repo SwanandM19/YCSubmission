@@ -1,11 +1,13 @@
 import mongoose, { Schema, models, Model } from 'mongoose';
 
+
 export interface IOrder {
   orderId: string;
   vendorId: string;
   items: { name: string; price: number; quantity: number }[];
   subtotal: number;
-  tax: number;
+  // tax: number;
+  gstAmount: number;
   // platformFee: number;
   totalAmount: number;
   paymentStatus: 'pending' | 'paid' | 'failed';
@@ -14,22 +16,23 @@ export interface IOrder {
   refundId?: string;
   refundStatus?: string;
   refundedAt?: Date;
-  
+ 
   // Payout tracking
   payoutStatus: 'pending' | 'processing' | 'completed' | 'failed';
   payoutId?: string;
   payoutAmount?: number;
-  
+ 
   status: 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled';
-  
+ 
   // ✅ ADDED: Customer details and notification token
   customerName?: string;
   customerPhone?: string;
   customerFcmToken?: string;
-  
+ 
   createdAt: Date;
   updatedAt: Date;
 }
+
 
 const OrderSchema = new Schema<IOrder>(
   {
@@ -52,10 +55,11 @@ const OrderSchema = new Schema<IOrder>(
       },
     ],
     subtotal: Number,
-    tax: Number,
+    // tax: Number,
+    gstAmount: Number,
     // platformFee: Number,
     totalAmount: Number,
-    
+   
     paymentStatus: {
       type: String,
       enum: ['pending', 'paid', 'failed'],
@@ -63,11 +67,12 @@ const OrderSchema = new Schema<IOrder>(
     },
     paymentId: String,
 
+
     // razorpayPaymentId: { type: String, default: null },
     refundId:          { type: String, default: null },
     refundStatus:      { type: String, default: null },
     refundedAt:        { type: Date,   default: null },
-    
+   
     payoutStatus: {
       type: String,
       enum: ['pending', 'processing', 'completed', 'failed'],
@@ -75,13 +80,13 @@ const OrderSchema = new Schema<IOrder>(
     },
     payoutId: String,
     payoutAmount: Number,
-    
+   
     status: {
       type: String,
       enum: ['pending', 'preparing', 'ready', 'completed', 'cancelled'],
       default: 'pending',
     },
-    
+   
     // ✅ ADDED: Customer information
     customerName: {
       type: String,
@@ -99,6 +104,8 @@ const OrderSchema = new Schema<IOrder>(
   }
 );
 
+
 const Order: Model<IOrder> = models.Order || mongoose.model<IOrder>('Order', OrderSchema);
+
 
 export default Order;

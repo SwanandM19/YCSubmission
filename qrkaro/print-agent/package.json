@@ -1,0 +1,16 @@
+{
+  "name": "nosher-print-agent",
+  "version": "1.0.0",
+  "description": "Silent auto-print agent for Nosher Xerox vendors",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "pdf-to-printer": "^5.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

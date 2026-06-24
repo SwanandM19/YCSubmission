@@ -86,21 +86,26 @@
 //   }
 // }
 
-
-
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
+
 import connectDB from '@/lib/mongodb';
 import Order from '@/lib/models/Order';
+import Vendor from '@/lib/models/Vendor';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = body;
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId,
+    } = body;
 
-    // Verify signature
+    // ── Verify Razorpay Signature ──────────────────────────────────────────
     const generatedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -112,59 +117,103 @@ export async function POST(req: NextRequest) {
 
     console.log('✅ Payment verified:', orderId);
 
-    // Update order
     await connectDB();
+
+    // ── Update Order Payment Status ────────────────────────────────────────
     const order = await Order.findOneAndUpdate(
       { orderId },
       {
         paymentStatus: 'paid',
         paymentId: razorpay_payment_id,
-        // paymentId: razorpay_payment_id,        // existing field
-        razorpayPaymentId: razorpay_payment_id, // ← ADD THIS
+        razorpayPaymentId: razorpay_payment_id,
         status: 'pending',
       },
       { new: true }
     );
 
-//     await Order.findOneAndUpdate(
-//   { orderId },
-//   {
-//     paymentStatus: 'paid',
-//     paymentId: razorpay_payment_id,        // existing field
-//     razorpayPaymentId: razorpay_payment_id, // ← ADD THIS
-//     status: 'pending',
-//   }
-// );
-
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // 🚀 TRIGGER AUTOMATIC PAYOUT
-    // console.log('🚀 Triggering payout...');
-    // try {
-    //   const payoutResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/razorpay/payout`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       orderId: order.orderId,
-    //       vendorId: order.vendorId,
-    //       amount: order.totalAmount,
-    //     }),
-    //   });
-console.log('🚀 Triggering payout...');
-try {
-  const payoutResponse = await fetch('http://localhost:3000/api/razorpay/payout', {
-    // or just '/api/razorpay/payout' in Next 16:
-    // const payoutResponse = await fetch('http://localhost:3000/api/razorpay/payout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      orderId: order.orderId,
-      vendorId: order.vendorId,
-      amount: order.totalAmount,
-    }),
-  });
+    // ── Deduct Stock Only After Payment Confirmed ──────────────────────────
+    try {
+      const vendor = await Vendor.findOne({ vendorId: order.vendorId });
+
+      if (vendor) {
+        let stockChanged = false;
+
+        order.items.forEach((orderedItem: any) => {
+          const orderedItemId = orderedItem._id || orderedItem.itemId;
+
+          const baseName = (orderedItem.name || '')
+            .replace(
+              /\s*\(\s*\d+(\.\d+)?\s*(g|kg|ml|l|ltr|litre|litres|pcs|pc|piece|pieces|packet|packets|bag|bags|bottle|bottles)\s*\)\s*$/i,
+              ''
+            )
+            .trim();
+
+          const menuItem = vendor.menuItems.find((m: any) => {
+            if (orderedItemId && m._id?.toString() === orderedItemId.toString()) {
+              return true;
+            }
+            return m.name?.trim().toLowerCase() === baseName.toLowerCase();
+          });
+
+          if (!menuItem || typeof menuItem.stock !== 'number') return;
+
+          const selectionMatch = (orderedItem.name || '').match(
+            /\(\s*(\d+(\.\d+)?)\s*(g|kg|ml|l|ltr|litre|litres|pcs|pc|piece|pieces|packet|packets|bag|bags|bottle|bottles)\s*\)/i
+          );
+
+          let deductAmount = Number(orderedItem.quantity) || 0;
+
+          if (selectionMatch) {
+            const selectedValue = parseFloat(selectionMatch[1]);
+            const selectedUnit = selectionMatch[3].toLowerCase();
+            const stockUnit = (menuItem.unit || '').toLowerCase();
+
+            if (['kg', 'g'].includes(stockUnit)) {
+              deductAmount = ['kg'].includes(selectedUnit)
+                ? selectedValue * (Number(orderedItem.quantity) || 0)
+                : (selectedValue / 1000) * (Number(orderedItem.quantity) || 0);
+            } else if (['litre', 'litres', 'ltr', 'l', 'ml'].includes(stockUnit)) {
+              deductAmount = ['litre', 'litres', 'ltr', 'l'].includes(selectedUnit)
+                ? selectedValue * (Number(orderedItem.quantity) || 0)
+                : (selectedValue / 1000) * (Number(orderedItem.quantity) || 0);
+            } else {
+              deductAmount = selectedValue * (Number(orderedItem.quantity) || 0);
+            }
+          }
+
+          menuItem.stock = Math.max(0, menuItem.stock - deductAmount);
+          menuItem.available = menuItem.stock > 0;
+          stockChanged = true;
+        });
+
+        if (stockChanged) {
+          await vendor.save();
+          console.log('✅ Stock deducted after payment confirmed:', orderId);
+        } else {
+          console.log('ℹ️ No stock-tracked items updated for:', orderId);
+        }
+      }
+    } catch (stockError) {
+      console.error('⚠️ Stock deduction failed (non-blocking):', stockError);
+    }
+
+    // ── Trigger Automatic Payout ───────────────────────────────────────────
+    console.log('🚀 Triggering payout...');
+    try {
+      const payoutResponse = await fetch('http://localhost:3000/api/razorpay/payout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.orderId,
+          vendorId: order.vendorId,
+          amount: order.totalAmount,
+        }),
+      });
+
       const payoutData = await payoutResponse.json();
 
       if (payoutResponse.ok) {

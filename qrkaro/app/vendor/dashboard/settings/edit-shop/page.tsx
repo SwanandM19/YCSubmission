@@ -8,31 +8,21 @@ interface VendorDetails {
   phone: string;
   city: string;
   state: string;
-  category: string;
+  shopType: string;
 }
-
-const SHOP_TYPES = [
-  'Restaurant',
-  'Cafe',
-  'Stall',
-  'Xerox',
-  'Grocery',
-  'Retail',
-  'Other'
-];
 
 export default function EditShopDetailsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [vendorId, setVendorId] = useState<string>('');
-  
+
   const [formData, setFormData] = useState<VendorDetails>({
     shopName: '',
     phone: '',
     city: '',
     state: '',
-    category: '',
+    shopType: '',
   });
 
   useEffect(() => {
@@ -50,13 +40,13 @@ export default function EditShopDetailsPage() {
     try {
       setLoading(true);
       console.log('🔍 Fetching vendor details for:', vid);
-      
+
       const response = await fetch(`/api/vendor?vendorId=${vid}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch vendor details');
       }
-      
+
       const data = await response.json();
       console.log('✅ Vendor data received:', data);
 
@@ -65,7 +55,7 @@ export default function EditShopDetailsPage() {
         phone: data.phone || '',
         city: data.city || '',
         state: data.state || '',
-        category: data.category || '',
+        shopType: data.shopType || '',
       });
     } catch (error: any) {
       console.error('❌ Error fetching vendor details:', error);
@@ -75,7 +65,7 @@ export default function EditShopDetailsPage() {
     }
   };
 
-  const handleChange = (field: keyof VendorDetails, value: string) => {
+  const handleChange = (field: keyof Omit<VendorDetails, 'shopType'>, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -85,34 +75,37 @@ export default function EditShopDetailsPage() {
       alert('Shop name is required');
       return;
     }
-    
+
     const phoneDigits = formData.phone.replace(/\D/g, '');
     if (phoneDigits.length !== 10) {
       alert('Phone number must be exactly 10 digits');
       return;
     }
-    
-    if (!formData.category) {
-      alert('Please select a shop type');
+
+    // Fallback read from localStorage in case state isn't hydrated yet
+    const vid = vendorId || localStorage.getItem('vendorId') || '';
+    if (!vid) {
+      alert('Session expired. Please login again.');
+      router.push('/vendor/dashboard');
       return;
     }
 
     try {
       setSaving(true);
       console.log('💾 Saving shop details...');
-      
+
       const response = await fetch('/api/vendor/update-shop', {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          vendorId,
+          vendorId: vid,
           shopName: formData.shopName.trim(),
           phone: phoneDigits,
           city: formData.city.trim(),
           state: formData.state.trim(),
-          category: formData.category,
+          // shopType intentionally excluded — locked at onboarding
         }),
       });
 
@@ -173,6 +166,7 @@ export default function EditShopDetailsPage() {
           </h3>
 
           <div className="space-y-4">
+            {/* Shop Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Shop Name <span className="text-red-500">*</span>
@@ -186,26 +180,32 @@ export default function EditShopDetailsPage() {
               />
             </div>
 
+            {/* Shop Type — Read Only, locked at onboarding */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shop Type <span className="text-red-500">*</span>
+                Shop Type
               </label>
-              <select
-                value={formData.category}
-                onChange={(e) => handleChange('category', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-orange-500 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-white text-gray-900 font-medium"
-              >
-                <option value="" disabled className="text-gray-400">
-                  Select shop type
-                </option>
-                {SHOP_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
+              <div className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between">
+                <span className="text-gray-700 font-medium">
+                  {formData.shopType || '—'}
+                </span>
+                <span className="flex items-center gap-1.5 text-xs font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Not editable
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                Shop type is fixed at onboarding and cannot be changed. Contact support if needed.
+              </p>
             </div>
 
+            {/* Phone Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone Number <span className="text-red-500">*</span>
@@ -232,7 +232,11 @@ export default function EditShopDetailsPage() {
         <div className="bg-white rounded-2xl p-5 shadow-sm">
           <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
             <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                clipRule="evenodd"
+              />
             </svg>
             Location Information
           </h3>
@@ -270,8 +274,16 @@ export default function EditShopDetailsPage() {
 
         {/* Info Box */}
         <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 flex gap-3">
-          <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          <svg
+            className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clipRule="evenodd"
+            />
           </svg>
           <div>
             <p className="text-sm font-medium text-blue-900">
@@ -280,7 +292,7 @@ export default function EditShopDetailsPage() {
           </div>
         </div>
 
-        {/* Save Button */}
+        {/* Save / Cancel Buttons */}
         <div className="flex gap-3 pt-2">
           <button
             onClick={() => router.back()}
@@ -302,7 +314,12 @@ export default function EditShopDetailsPage() {
             ) : (
               <>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
                 Save Changes
               </>

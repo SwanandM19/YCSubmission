@@ -686,6 +686,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 // Type definitions
 interface StepItem {
@@ -777,9 +778,14 @@ export default function LandingPage() {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <div className="bg-orange-500 p-1.5 rounded-lg">
-                <QrCode className="text-white w-6 h-6" />
-              </div>
+              <Image
+                src="/nosher-logo2.png"
+                alt="Nosher logo"
+                width={42}
+                height={42}
+                className="w-20 h-20 object-contain rounded-lg"
+                priority
+              />
               <span className="text-2xl font-extrabold tracking-tight text-gray-900">
                 <span className="text-orange-500">No</span>sher
               </span>
@@ -1045,6 +1051,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
+      {/* Pricing Section */}
       <section
         id="pricing"
         className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
@@ -1054,33 +1061,48 @@ export default function LandingPage() {
             Simple Pricing for Every Business
           </h2>
           <p className="text-gray-500 font-medium">
-            Choose the plan that fits your growth
+            Pick your shop type — get set up in under 5 minutes
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Starter Plan */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+          {/* Food Stalls & Cafes */}
           <div className="bg-white border-2 border-gray-100 p-10 rounded-[40px] hover:border-orange-200 transition-all flex flex-col">
-            <h3 className="text-xl font-bold mb-4">Starter Plan</h3>
-            <div className="mb-6">
+            <div className="text-3xl mb-4">🍛</div>
+            <h3 className="text-xl font-bold mb-1">Food Stall / Cafe</h3>
+            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+              For restaurants, dhabas, canteens, and cafes that take food orders and need real-time kitchen management.
+            </p>
+            <div className="mb-2">
               <span className="text-4xl font-black">₹199</span>
               <span className="text-gray-400 ml-1">/ month</span>
             </div>
             <p className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-8 line-through">
               Setup Fee: ₹500
             </p>
-
             <ul className="space-y-4 mb-12 flex-grow">
               <li className="flex items-center gap-3 text-gray-600">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Includes QR + Admin App</span>
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>QR-based digital menu for customers</span>
               </li>
               <li className="flex items-center gap-3 text-gray-600">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Instant Setup</span>
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Live order dashboard with Accept / Decline</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Razorpay UPI & card payments</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>0% commission on every order</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Real-time push notifications</span>
               </li>
             </ul>
-
             <Link
               href="/onboard"
               className="w-full py-4 border-2 border-orange-500 text-orange-500 font-bold rounded-2xl hover:bg-orange-50 transition-colors text-center"
@@ -1089,35 +1111,45 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Business Plan */}
+          {/* Grocery Store — Most Popular */}
           <div className="bg-white border-2 border-orange-500 p-10 rounded-[40px] shadow-2xl shadow-orange-100 relative flex flex-col">
             <div className="absolute top-0 right-10 -translate-y-1/2 bg-orange-500 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">
               Most Popular
             </div>
-            <h3 className="text-xl font-bold mb-4">Business Plan</h3>
-            <div className="mb-6">
-              <span className="text-4xl font-black">₹399</span>
+            <div className="text-3xl mb-4">🛒</div>
+            <h3 className="text-xl font-bold mb-1">Grocery Store</h3>
+            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+              For kirana and grocery stores that sell by weight, volume, or packets with live stock tracking.
+            </p>
+            <div className="mb-2">
+              <span className="text-4xl font-black">₹199</span>
               <span className="text-gray-400 ml-1">/ month</span>
             </div>
             <p className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-8 line-through">
-              Setup Fee: ₹999
+              Setup Fee: ₹500
             </p>
-
             <ul className="space-y-4 mb-12 flex-grow">
               <li className="flex items-center gap-3 text-gray-600">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Everything in Starter</span>
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Sell by kg, litre, packet or custom unit</span>
               </li>
               <li className="flex items-center gap-3 text-gray-600">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Priority Support</span>
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Live stock count with low-stock alerts</span>
               </li>
               <li className="flex items-center gap-3 text-gray-600">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Multiple Menus</span>
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Auto price calculation by quantity selected</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Razorpay UPI & card payments</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>0% commission on every order</span>
               </li>
             </ul>
-
             <Link
               href="/onboard"
               className="w-full py-4 bg-orange-500 text-white font-bold rounded-2xl shadow-xl shadow-orange-200 hover:bg-orange-600 transition-colors text-center"
@@ -1125,6 +1157,51 @@ export default function LandingPage() {
               Start Free Setup
             </Link>
           </div>
+
+          {/* Xerox / Print Shop */}
+          <div className="bg-white border-2 border-gray-100 p-10 rounded-[40px] hover:border-orange-200 transition-all flex flex-col">
+            <div className="text-3xl mb-4">🖨️</div>
+            <h3 className="text-xl font-bold mb-1">Xerox / Print Shop</h3>
+            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+              For xerox and print shops that accept document upload jobs and manage print queue without manual billing.
+            </p>
+            <div className="mb-2">
+              <span className="text-4xl font-black">₹299</span>
+              <span className="text-gray-400 ml-1">/ month</span>
+            </div>
+            <p className="text-xs font-bold text-orange-400 uppercase tracking-widest mb-8 line-through">
+              Setup Fee: ₹999
+            </p>
+            <ul className="space-y-4 mb-12 flex-grow">
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Customer uploads PDF / doc via QR scan</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Choose B&W or colour, pages, copies</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Live print job queue on vendor dashboard</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Auto price calculation by pages & type</span>
+              </li>
+              <li className="flex items-center gap-3 text-gray-600">
+                <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                <span>Razorpay UPI & card payments</span>
+              </li>
+            </ul>
+            <Link
+              href="/onboard"
+              className="w-full py-4 border-2 border-orange-500 text-orange-500 font-bold rounded-2xl hover:bg-orange-50 transition-colors text-center"
+            >
+              Start Free Setup
+            </Link>
+          </div>
+
         </div>
       </section>
 
@@ -1234,50 +1311,50 @@ export default function LandingPage() {
         </div>
       </footer>
       {showQR && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            
-            {/* 🔹 Blurred dark background */}
-            <div
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-              onClick={() => setShowQR(false)}
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+
+          {/* 🔹 Blurred dark background */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setShowQR(false)}
+          />
+
+          {/* 🔹 Modal Card */}
+          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center animate-scaleIn">
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Scan Demo QR
+            </h2>
+
+            {/* QR Image */}
+            <img
+              src="/demo-qr.png"
+              alt="Demo QR"
+              className="mx-auto w-56 h-56 mb-4"
             />
 
-            {/* 🔹 Modal Card */}
-            <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center animate-scaleIn">
-              
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                Scan Demo QR
-              </h2>
+            <p className="text-gray-600 text-sm mb-3">
+              Scan this QR to open the live demo menu.
+            </p>
 
-              {/* QR Image */}
-              <img
-                src="/demo-qr.png"
-                alt="Demo QR"
-                className="mx-auto w-56 h-56 mb-4"
-              />
+            {/* 🔹 Fallback link */}
+            <a
+              href="https://www.nosher.in/v/VND1772042314827872"
+              className="text-orange-600 font-semibold underline block mb-5"
+            >
+              QR not working? Open demo manually
+            </a>
 
-              <p className="text-gray-600 text-sm mb-3">
-                Scan this QR to open the live demo menu.
-              </p>
-
-              {/* 🔹 Fallback link */}
-              <a
-                href="https://www.nosher.in/v/VND1772042314827872"
-                className="text-orange-600 font-semibold underline block mb-5"
-              >
-                QR not working? Open demo manually
-              </a>
-
-              {/* Close button */}
-              <button
-                onClick={() => setShowQR(false)}
-                className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold transition"
-              >
-                Close
-              </button>
-            </div>
+            {/* Close button */}
+            <button
+              onClick={() => setShowQR(false)}
+              className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold transition"
+            >
+              Close
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
 
 
